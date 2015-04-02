@@ -17,6 +17,15 @@
 
 #import "GRKStoryboardProxyViewController.h"
 
+#if __has_include(<CocoaLumberjack/CocoaLumberjack.h>)
+#import <CocoaLumberjack/CocoaLumberjack.h>
+#define GRKLogError(fmt, ...) DDLogError(fmt, ##__VA_ARGS__)
+#define GRKLogWarn(fmt, ...) DDLogWarn(fmt, ##__VA_ARGS__)
+#else
+#define GRKLogError(fmt, ...) NSLog((@"<%@>[ERROR]: " fmt), NSStringFromClass([self class]), ##__VA_ARGS__)
+#define GRKLogWarn(fmt, ...) NSLog((@"<%@>[WARN]: "  fmt), NSStringFromClass([self class]), ##__VA_ARGS__)
+#endif
+
 NSString * const kGRKProxyDefaultSceneIdentifierMetadataDelimiter = @"@";
 NSString * const kGRKProxyDefaultStoryboardBundleIdentifierMetadataDelimiter = @"#";
 
@@ -113,7 +122,7 @@ static void * kStoryboardObservationContext = &kStoryboardObservationContext;
         retVal = [NSBundle bundleWithIdentifier:self.storyboardBundleIdentifier];
         if (!retVal)
         {
-            NSLog(@"<%@> [WARN]: Unable to locate bundle named '%@'; defaulting to main bundle.", NSStringFromClass([self class]), self.storyboardBundleIdentifier);
+            GRKLogWarn(@"Unable to locate bundle named '%@'; defaulting to main bundle.", self.storyboardBundleIdentifier);
         }
     }
     
@@ -139,13 +148,13 @@ static void * kStoryboardObservationContext = &kStoryboardObservationContext;
         }
         @catch (NSException *exception)
         {
-            NSLog(@"<%@>[ERROR]: %@", NSStringFromClass([self class]), exception);
+            GRKLogError(@"%@", exception);
         }
     }
     
     if (!retVal)
     {
-        NSLog(@"<%@>[ERROR]: Unable to locate storyboard named '%@' in bundle '%@'.\n\tBe sure `restorationIdentifier` is set appropriately in Interface Builder for this proxy view controller.", NSStringFromClass([self class]), self.storyboardName, [self derivedBundle]);
+        GRKLogError(@"Unable to locate storyboard named '%@' in bundle '%@'.\n\tBe sure `restorationIdentifier` is set appropriately in Interface Builder for this proxy view controller.", self.storyboardName, [self derivedBundle]);
     }
     
     return retVal;
@@ -165,7 +174,7 @@ static void * kStoryboardObservationContext = &kStoryboardObservationContext;
         }
         @catch (NSException *exception)
         {
-            NSLog(@"<%@>[ERROR]: %@", NSStringFromClass([self class]), exception);
+            GRKLogError(@"%@", exception);
         }
     }
     
@@ -175,7 +184,7 @@ static void * kStoryboardObservationContext = &kStoryboardObservationContext;
         retVal = [storyboard instantiateInitialViewController];
         if (!retVal)
         {
-            NSLog(@"<%@>[ERROR]: Storyboard '%@' does not specify an initial view controller.", NSStringFromClass([self class]), self.storyboardName);
+            GRKLogError(@"Storyboard '%@' does not specify an initial view controller.", self.storyboardName);
         }
     }
     
